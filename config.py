@@ -1,0 +1,37 @@
+"""
+Central configuration for the Document Intelligence MVP.
+All paths, model names, and tunable thresholds live here — see RULES.md §7.
+"""
+
+from pathlib import Path
+
+# --- Paths ---
+PROJECT_ROOT = Path(__file__).parent
+RAW_PDF_DIR = PROJECT_ROOT / "data" / "raw_pdfs"
+PROCESSED_DIR = PROJECT_ROOT / "data" / "processed"
+CHROMA_DB_DIR = PROJECT_ROOT / "chroma_db"
+
+# --- Sarvam API ---
+SARVAM_OCR_MAX_PAGES_PER_JOB = 10  # hard API limit — see ARCHITECTURE.md
+SARVAM_SUMMARY_MODEL = "sarvam-30b"   # fast, used for per-document summaries
+SARVAM_CHAT_MODEL = "sarvam-105b"     # stronger reasoning, used for chatbot answers
+SARVAM_API_TIMEOUT_SECONDS = 60
+SARVAM_MAX_RETRIES = 3
+
+# --- Embeddings ---
+EMBEDDING_MODEL_NAME = "BAAI/bge-m3"
+EMBEDDING_DEVICE = "cuda"  # falls back to "cpu" automatically if unavailable — see embeddings.py
+
+# --- Chunking ---
+CHUNK_SIZE_WORDS = 500
+CHUNK_OVERLAP_WORDS = 50
+
+# --- Retrieval ---
+RETRIEVAL_TOP_K = 8
+RERANK_TOP_N = 5  # only used if reranker.py is enabled
+
+# --- Vector store ---
+CHROMA_COLLECTION_NAME = "govt_documents"
+
+# --- Summarization accuracy check ---
+SUMMARY_FACT_CHECK_ENABLED = True

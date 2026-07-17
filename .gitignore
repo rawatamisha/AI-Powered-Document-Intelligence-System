@@ -1,0 +1,26 @@
+# Secrets
+.env
+
+# Real government documents — never commit source data
+data/raw_pdfs/*
+!data/raw_pdfs/.gitkeep
+data/processed/*
+!data/processed/.gitkeep
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Model caches
+.cache/
+*.pt
+*.bin
+
+# ChromaDB local storage
+chroma_db/
+
+# OS/editor
+.DS_Store
+.vscode/
