@@ -58,3 +58,23 @@
 ---
 
 <!-- Add new dated entries above this line as work progresses. -->
+
+## [2026-07-21] — Session 1
+**Phase**: Phase 0 — Project Setup
+**Completed**:
+- venv created, dependencies installed
+- Sarvam API key configured in .env
+- GPU verified: RTX 3050 6GB detected, torch.cuda.is_available() = True
+  (required installing torch via cu126 wheel — plain `pip install torch` gives CPU-only)
+- Repo pushed to GitHub (private): govdoc-intelligence
+**Next Session Should**: Begin Phase 2 — implement src/processing/chunker.py per ARCHITECTURE.md §2.2/§5.1
+
+## [2026-07-22] — Session 1
+**Phase**: Phase 0 — Project Setup
+**Completed**:
+- Debugged the phase 0
+- solved the issue of 
+    "<!-- page: 1 -->
+    [OCR FAILED for pages 1-1 — needs manual review]"
+
+**Next Session Should**: Begin Phase 2 — implement src/processing/chunker.py per ARCHITECTURE.md §2.2/§5.1

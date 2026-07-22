@@ -9,6 +9,8 @@ See ARCHITECTURE.md §2.1, RULES.md §4 (error handling), PHASES.md Phase 1.
 """
 
 import os
+import shutil
+import zipfile
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -48,6 +50,47 @@ class OcrTransientError(Exception):
     """Raised for retryable failures (timeouts, rate limits, transient API errors)."""
 
 
+def _load_ocr_output(download_path: Path, output_format: str) -> str:
+    """
+    Reads the structured OCR payload returned by Sarvam.
+
+    The SDK may materialize the download as either a directory of files or a
+    single archive/file path. This helper handles both forms and returns the
+    first markdown-like document found.
+    """
+    if download_path.is_dir():
+        candidates = sorted(download_path.rglob(f"*.{output_format}"))
+        if not candidates and output_format == "md":
+            candidates = sorted(download_path.rglob("*.markdown"))
+        if not candidates:
+            raise RuntimeError(f"No {output_format} output found in {download_path}")
+        return candidates[0].read_text(encoding="utf-8")
+
+    if download_path.is_file():
+        if zipfile.is_zipfile(download_path):
+            extract_dir = download_path.parent / f"{download_path.stem}__extracted"
+            if extract_dir.exists():
+                shutil.rmtree(extract_dir)
+            extract_dir.mkdir(parents=True, exist_ok=True)
+
+            with zipfile.ZipFile(download_path) as archive:
+                archive.extractall(extract_dir)
+
+            candidates = sorted(extract_dir.rglob(f"*.{output_format}"))
+            if not candidates and output_format == "md":
+                candidates = sorted(extract_dir.rglob("*.markdown"))
+            if not candidates:
+                raise RuntimeError(
+                    f"No {output_format} output found in extracted archive {download_path}"
+                )
+            return candidates[0].read_text(encoding="utf-8")
+
+        if download_path.suffix.lstrip(".") == output_format:
+            return download_path.read_text(encoding="utf-8")
+
+    raise RuntimeError(f"Unsupported OCR output format at {download_path}")
+
+
 @retry(
     reraise=True,
     stop=stop_after_attempt(SARVAM_MAX_RETRIES),
@@ -79,14 +122,10 @@ def _run_ocr_job(pdf_path: Path, language: str, output_format: str = "md") -> st
         job.start()
         job.wait_until_complete(timeout=SARVAM_API_TIMEOUT_SECONDS)
 
-        output_dir = pdf_path.parent / f"{pdf_path.stem}__ocr_out"
-        job.download_output(str(output_dir))
+        output_path = pdf_path.parent / f"{pdf_path.stem}__ocr_out"
+        job.download_output(str(output_path))
 
-        output_file = next(output_dir.glob(f"*.{output_format}"), None)
-        if output_file is None:
-            raise RuntimeError(f"No {output_format} output found for {pdf_path.name}")
-
-        return output_file.read_text(encoding="utf-8")
+        return _load_ocr_output(output_path, output_format)
 
     except TimeoutError as exc:
         logger.warning("OCR job timed out for %s, will retry: %s", pdf_path.name, exc)
