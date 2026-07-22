@@ -30,9 +30,9 @@
 ---
 
 ## Current Status (keep this section updated at the top — most recent snapshot)
-**Phase**: Phase 0 — Project Setup
-**Last Updated**: Not yet started
-**Overall Progress**: Repo scaffold and planning documents (PRD, Architecture, Rules, Phases) complete. No code written yet.
+**Phase**: Phase 2 — Chunking, Embeddings & Summarization
+**Last Updated**: 2026-07-22
+**Overall Progress**: Phase 2 pipeline now runs end-to-end on the sample PDF: OCR text is chunked, indexed in ChromaDB, and summarized with a safe fallback if Sarvam returns malformed output.
 
 ---
 
@@ -59,6 +59,35 @@
 
 <!-- Add new dated entries above this line as work progresses. -->
 
+## [2026-07-22] — Session 2
+**Phase**: Phase 2 — Chunking, Embeddings & Summarization
+**Completed**:
+- Implemented language detection, chunking, local embeddings, ChromaDB storage, and structured summarization.
+- Updated the pipeline so already-OCR'd PDFs still continue through Phase 2 work.
+- Added regression tests for the new Phase 2 modules.
+- Verified the sample PDF completes Phase 2 end-to-end and writes a summary file.
+**In Progress**:
+- Phase 2 is operational on the sample set; summary quality can be reviewed on more PDFs next.
+**Decisions Made**:
+- Treat malformed Sarvam summary output as retryable, then fall back to a safe non-fabricated summary if retries are exhausted.
+- Do not skip Phase 2 just because OCR output already exists.
+**Blockers / Open Questions**:
+- Sarvam summary responses can still be inconsistent, so the fallback path remains necessary for reliability.
+**Files Changed**:
+- `scripts/run_pipeline.py`
+- `src/ingestion/language_detect.py`
+- `src/processing/chunker.py`
+- `src/processing/summarizer.py`
+- `src/retrieval/embeddings.py`
+- `src/retrieval/vector_store.py`
+- `tests/test_language_detect.py`
+- `tests/test_chunker.py`
+- `tests/test_embeddings.py`
+- `tests/test_vector_store.py`
+- `tests/test_summarizer.py`
+**Next Session Should**:
+- Review the generated summary quality on additional PDFs, then move on to Phase 3 retrieval/chatbot work.
+
 ## [2026-07-21] — Session 1
 **Phase**: Phase 0 — Project Setup
 **Completed**:
@@ -76,5 +105,6 @@
 - solved the issue of 
     "<!-- page: 1 -->
     [OCR FAILED for pages 1-1 — needs manual review]"
+- completed phase 2 processes
 
 **Next Session Should**: Begin Phase 2 — implement src/processing/chunker.py per ARCHITECTURE.md §2.2/§5.1
