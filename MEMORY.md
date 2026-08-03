@@ -1,15 +1,15 @@
 # MEMORY.md — Running Project Memory
 
-**Purpose**: This file is the agent's memory across chat sessions/restarts. Update it at the end of every working session — that way, a fresh chat with the coding agent only needs to read this file (not the whole codebase) to know exactly where things stand. Keep entries short and factual; this is a status log, not documentation (that's what `ARCHITECTURE.md` is for).
+**Purpose**: This file is the agent's memory across chat sessions/restarts. We update it at the end of every working session that way, a fresh collegue only needs to read this file (not the whole codebase) to know exactly where things stand.
 
 **How to use this file (for the developer)**:
-1. At the start of a new agent session, paste or point the agent to this file first, along with `RULES.md`.
+1. At the start of a new session, paste or point the agent to this file first, along with `RULES.md`.
 2. At the end of a session, ask the agent (or do it yourself) to append a new dated entry below, following the template.
 3. Never delete old entries — this is a log. If something becomes outdated, note the correction in a new entry rather than editing history.
 
 ---
 
-## How to Write an Entry
+##Format of an Entry
 ```
 ## [YYYY-MM-DD] — Session N
 **Phase**: <current phase from PHASES.md>
@@ -38,7 +38,7 @@
 
 ## Session Log
 
-## [Not yet started] — Session 0 (Planning)
+## Session 0 (Planning)
 **Phase**: Phase 0 — Project Setup
 **Completed**:
 - PRD.md, ARCHITECTURE.md, RULES.md, PHASES.md written and finalized.
@@ -58,6 +58,27 @@
 ---
 
 <!-- Add new dated entries above this line as work progresses. -->
+
+## [2026-07-21] — Session 1
+**Phase**: Phase 0 — Project Setup
+**Completed**:
+- venv created, dependencies installed
+- Sarvam API key configured in .env
+- GPU verified: RTX 3050 6GB detected, torch.cuda.is_available() = True
+  (required installing torch via cu126 wheel — plain `pip install torch` gives CPU-only)
+- Repo pushed to GitHub (private): govdoc-intelligence
+**Next Session Should**: Begin Phase 2 — implement src/processing/chunker.py per ARCHITECTURE.md §2.2/§5.1
+
+## [2026-07-22] — Session 1
+**Phase**: Phase 0 — Project Setup
+**Completed**:
+- Debugged the phase 0
+- solved the issue of 
+    "<!-- page: 1 -->
+    [OCR FAILED for pages 1-1 — needs manual review]"
+- completed phase 2 processes
+
+**Next Session Should**: Begin Phase 2 — implement src/processing/chunker.py per ARCHITECTURE.md §2.2/§5.1
 
 ## [2026-07-22] — Session 2
 **Phase**: Phase 2 — Chunking, Embeddings & Summarization
@@ -87,24 +108,3 @@
 - `tests/test_summarizer.py`
 **Next Session Should**:
 - Review the generated summary quality on additional PDFs, then move on to Phase 3 retrieval/chatbot work.
-
-## [2026-07-21] — Session 1
-**Phase**: Phase 0 — Project Setup
-**Completed**:
-- venv created, dependencies installed
-- Sarvam API key configured in .env
-- GPU verified: RTX 3050 6GB detected, torch.cuda.is_available() = True
-  (required installing torch via cu126 wheel — plain `pip install torch` gives CPU-only)
-- Repo pushed to GitHub (private): govdoc-intelligence
-**Next Session Should**: Begin Phase 2 — implement src/processing/chunker.py per ARCHITECTURE.md §2.2/§5.1
-
-## [2026-07-22] — Session 1
-**Phase**: Phase 0 — Project Setup
-**Completed**:
-- Debugged the phase 0
-- solved the issue of 
-    "<!-- page: 1 -->
-    [OCR FAILED for pages 1-1 — needs manual review]"
-- completed phase 2 processes
-
-**Next Session Should**: Begin Phase 2 — implement src/processing/chunker.py per ARCHITECTURE.md §2.2/§5.1
