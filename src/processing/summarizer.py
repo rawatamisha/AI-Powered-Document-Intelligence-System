@@ -153,6 +153,9 @@ def _validate_summary(summary: DocumentSummary, source_text: str) -> DocumentSum
     if not summary.purpose or summary.purpose.strip() == "":
         summary.purpose = "not found in document"
         not_found.add("purpose")
+    elif not _contains_fact(source_text, summary.purpose):
+        summary.purpose = "not found in document"
+        not_found.add("purpose")
 
     for field_name in ("dates", "amounts"):
         values = list(getattr(summary, field_name))

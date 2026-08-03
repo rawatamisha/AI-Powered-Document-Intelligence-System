@@ -59,6 +59,24 @@
 
 <!-- Add new dated entries above this line as work progresses. -->
 
+## [2026-08-03] — Session 3
+**Phase**: Phase 2/3 — Core backend completion
+**Completed**:
+- Implemented a retrieval-based chatbot backend with citation-aware answers and a local fallback provider.
+- Added regression coverage for the RAG answer flow so the core path is verified without live API dependencies.
+- Verified the project test suite end-to-end with the current local environment.
+**In Progress**:
+- No frontend work is being pursued for this pass, per the current request.
+**Decisions Made**:
+- Kept the implementation focused on the backend pipeline and local retrieval behavior to maximize reliability and minimize unnecessary work.
+**Blockers / Open Questions**:
+- None for the current backend-focused scope.
+**Files Changed**:
+- [src/chatbot/rag_chain.py](src/chatbot/rag_chain.py)
+- [tests/test_rag_chain.py](tests/test_rag_chain.py)
+**Next Session Should**:
+- If needed later, extend the backend with a real Sarvam-backed answer provider or add a lightweight UI on top of the existing API.
+
 ## [2026-07-21] — Session 1
 **Phase**: Phase 0 — Project Setup
 **Completed**:

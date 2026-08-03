@@ -58,23 +58,24 @@ def _tail_words(text: str, word_limit: int) -> str:
 
 def _looks_like_heading(block: str) -> str | None:
     lines = [line.strip() for line in block.splitlines() if line.strip()]
-    if len(lines) != 1:
+    if not lines:
         return None
 
-    line = lines[0]
-    if line.startswith("#"):
-        return line.lstrip("#").strip() or None
+    first_line = lines[0]
+    if first_line.startswith("#"):
+        return first_line.lstrip("#").strip() or None
 
-    if re.match(r"^Section\s+\d+[:.]?\s+.+", line, flags=re.IGNORECASE):
-        return re.sub(r"^Section\s+\d+[:.]?\s+", "", line, flags=re.IGNORECASE).strip() or line
+    if re.match(r"^Section\s+\d+[:.]?\s+.+", first_line, flags=re.IGNORECASE):
+        return re.sub(r"^Section\s+\d+[:.]?\s+", "", first_line, flags=re.IGNORECASE).strip() or first_line
 
-    short_line = len(line.split()) <= 12 and len(line) <= 90
-    no_terminal_punctuation = not line.endswith((".", ":", ";"))
-    starts_with_capital = bool(re.match(r"^[A-Z0-9]", line))
-    mostly_alpha = sum(ch.isalpha() for ch in line) >= max(8, len(line) // 2)
+    if len(lines) == 1:
+        short_line = len(first_line.split()) <= 12 and len(first_line) <= 90
+        no_terminal_punctuation = not first_line.endswith((".", ":", ";"))
+        starts_with_capital = bool(re.match(r"^[A-Z0-9]", first_line))
+        mostly_alpha = sum(ch.isalpha() for ch in first_line) >= max(8, len(first_line) // 2)
 
-    if short_line and no_terminal_punctuation and starts_with_capital and mostly_alpha:
-        return line
+        if short_line and no_terminal_punctuation and starts_with_capital and mostly_alpha:
+            return first_line
 
     return None
 
