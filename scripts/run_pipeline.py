@@ -102,6 +102,11 @@ def summary_output_path(pdf_path: Path) -> Path:
     return pdf_path.with_name(f"{pdf_path.stem}_summary.md")
 
 
+def should_run_summary(force: bool, summary_path: Path) -> bool:
+    """True when a summary should be regenerated from already-processed OCR text."""
+    return force or not summary_path.exists()
+
+
 def load_processed_text(pdf_path: Path) -> str:
     """Loads existing OCR output for a PDF, or raises if it is missing."""
     path = processed_output_path(pdf_path)
@@ -110,7 +115,7 @@ def load_processed_text(pdf_path: Path) -> str:
     return path.read_text(encoding="utf-8")
 
 
-def run(input_dir: Path, language: str, limit: int | None, force: bool) -> PipelineSummary:
+def run(input_dir: Path, language: str, limit: int | None, force: bool, summaries_only: bool = False) -> PipelineSummary:
     """
     Runs the Phase 1 ingestion pipeline over every PDF in `input_dir`.
 
@@ -143,7 +148,11 @@ def run(input_dir: Path, language: str, limit: int | None, force: bool) -> Pipel
             start_time = time.monotonic()
             try:
                 processed_path = processed_output_path(pdf_path)
-                if force or not processed_path.exists():
+                if summaries_only:
+                    logger.info("  -> summaries-only mode: reusing existing OCR output")
+                    processed_text = load_processed_text(pdf_path)
+                    summary.skipped.append(pdf_path.name)
+                elif force or not processed_path.exists():
                     processed_text = ocr_document(pdf_path, language=language)
                     summary.processed.append(pdf_path.name)
                 else:
@@ -153,17 +162,18 @@ def run(input_dir: Path, language: str, limit: int | None, force: bool) -> Pipel
 
                 detected_language = detect_language(processed_text)
 
-                chunks = chunk_document(
-                    text=processed_text,
-                    source_file=pdf_path.name,
-                    language=detected_language,
-                )
-                if chunks:
-                    vector_store.add_chunks(chunks)
-                    summary.indexed.append(pdf_path.name)
+                if not summaries_only:
+                    chunks = chunk_document(
+                        text=processed_text,
+                        source_file=pdf_path.name,
+                        language=detected_language,
+                    )
+                    if chunks:
+                        vector_store.add_chunks(chunks)
+                        summary.indexed.append(pdf_path.name)
 
                 summary_path = summary_output_path(pdf_path)
-                if force or not summary_path.exists():
+                if should_run_summary(force=force, summary_path=summary_path):
                     summarize_document(
                         source_pdf_path=pdf_path,
                         processed_text=processed_text,
@@ -211,6 +221,11 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Re-process documents even if output already exists.",
     )
+    parser.add_argument(
+        "--summaries-only",
+        action="store_true",
+        help="Skip OCR and only re-run summaries from existing processed text.",
+    )
     return parser.parse_args()
 
 
@@ -218,14 +233,21 @@ def main() -> None:
     args = parse_args()
 
     logger.info("Starting Phase 1 ingestion pipeline")
-    logger.info("Input dir: %s | Language: %s | Limit: %s | Force: %s",
-                args.input_dir, args.language, args.limit, args.force)
+    logger.info(
+        "Input dir: %s | Language: %s | Limit: %s | Force: %s | Summaries-only: %s",
+        args.input_dir,
+        args.language,
+        args.limit,
+        args.force,
+        args.summaries_only,
+    )
 
     summary = run(
         input_dir=args.input_dir,
         language=args.language,
         limit=args.limit,
         force=args.force,
+        summaries_only=args.summaries_only,
     )
 
     print(summary.report())
