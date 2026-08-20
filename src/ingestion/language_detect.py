@@ -33,7 +33,8 @@ def detect_language(text: str) -> str:
         return "other"
 
     devanagari_count = len(_DEVANAGARI_RE.findall(sample))
-    if devanagari_count >= 1:
+    ratio = devanagari_count / max(len(re.sub(r"\s+", "", text)), 1)
+    if ratio > 0.2:
         return "hi"
 
     try:

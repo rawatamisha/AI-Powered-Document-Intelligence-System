@@ -207,8 +207,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--language",
         type=str,
-        default="hi-IN",
-        help="Language hint passed to the Sarvam OCR API (default: hi-IN)",
+        default="en-IN",
+        help="Language hint passed to the Sarvam OCR API (default: en-IN)",
     )
     parser.add_argument(
         "--limit",

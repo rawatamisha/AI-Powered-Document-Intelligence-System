@@ -8,6 +8,7 @@ citation metadata derived from retrieval results.
 from __future__ import annotations
 
 import os
+import re
 from dataclasses import dataclass, field
 from typing import Any, Protocol
 
@@ -147,9 +148,11 @@ class SarvamAnswerProvider:
             {
                 "role": "system",
                 "content": (
-                    "You answer questions strictly from the provided retrieved passages. "
+                    "You answer strictly from the provided retrieved passages. "
                     "Keep the answer concise, factual, and grounded in the source text. "
-                    "Do not invent facts or add outside knowledge. "
+                    "Respond in clear English, even if the source contains mixed-language text. "
+                    "Do not switch to Hindi or any other language. "
+                    "Ignore irrelevant passages and do not invent facts, dates, names, or numbers. "
                     "If the question is vague or greeting-like, respond with a short helpful prompt "
                     "that asks the user to ask about a specific document topic."
                 ),
@@ -216,6 +219,32 @@ class RAGChatbot:
         self.answer_provider = answer_provider or SarvamAnswerProvider()
         self.top_k = top_k
 
+    @staticmethod
+    def _relevance_filter(question: str, chunks: list[RetrievedChunk]) -> list[RetrievedChunk]:
+        if not chunks:
+            return chunks
+
+        tokens = {
+            token.casefold()
+            for token in re.findall(r"[A-Za-z0-9\u0900-\u097F]+", question)
+            if len(token) > 2
+        }
+        if not tokens:
+            return chunks[:5]
+
+        scored = []
+        for chunk in chunks:
+            text = chunk.text.casefold()
+            score = sum(1 for token in tokens if token in text)
+            if score > 0:
+                scored.append((score, chunk))
+
+        if not scored:
+            return chunks[:1]
+
+        scored.sort(key=lambda item: item[0], reverse=True)
+        return [chunk for _, chunk in scored[:5]]
+
     def answer(
         self,
         question: str,
@@ -232,6 +261,7 @@ class RAGChatbot:
             top_k=top_k or self.top_k,
             source_file=source_file,
         )
+        chunks = self._relevance_filter(question, chunks)
         logger.info(
             "Answered question '%s' with %d chunk(s) in %s mode",
             question,
